@@ -5,6 +5,17 @@ from PIL import Image
 
 #jpglist = glob( "stickers@2x/*.[jJ][pP][gG]" )
 pnglist = glob( "*.[pP][nN][gG]" )
+<<<<<<< HEAD
+=======
+num = 0
+for jpg in jpglist:
+	im = Image.open(jpg)
+	num += 1
+	png = str(num) + '.png'
+	im.thumbnail( (512,512) )
+	im.save(png)
+	print png
+>>>>>>> parent of 5ff5725... fine ver
 
 os.system('cd stickers@2x && rm *_key@2x.png *.meta tab*')
 for png in pnglist:
@@ -37,8 +48,11 @@ for png in pnglist:
 			print png
 	if 	os.path.getsize(png) > 350000:
 		im = Image.open(png)
+<<<<<<< HEAD
 		im.thumbnail( (512,512) )
 		im.save(jpg, quality=80)
 		im = Image.open(jpg)
 		im.save(png)
 		print 'big except'
+=======
+>>>>>>> parent of 5ff5725... fine ver
