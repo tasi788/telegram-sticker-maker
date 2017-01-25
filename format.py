@@ -6,6 +6,7 @@ from PIL import Image
 os.system('cd stickers@2x && find . \! -name "*.png" -delete && rm *_key@2x.png tab*')
 #jpglist = glob( "stickers@2x/*.[jJ][pP][gG]" )
 pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
+jpglist = glob( "stickers@2x/*.[jJ][pP][gG]" )
 for png in pnglist:
 	im = Image.open(png)
 	png = splitext(png)[0]+".png"
@@ -39,10 +40,15 @@ for png in pnglist:
 			#png = splitext(jpg)[0]+".png"
 			print png
 	if 	os.path.getsize(png) > 350000:
-		jpg = splitext(png)[0]+".jpg"
-		im = Image.open(png)
-		im.save(jpg, quality=80)
-		im = Image.open(jpg)
-		im.save(png)
-		os.system('rm *.jpg')
-		print 'big except'
+		qua = 90
+		for x in range(8):
+			jpg = splitext(png)[0]+".jpg"
+			im = Image.open(png)
+			im.save(jpg, quality=qua)
+			im = Image.open(jpg)
+			im.save(png)
+			qua -= x*10
+			print str(qua)
+			if 	os.path.getsize(png) <= 350000:
+				os.system('rm stickers@2x/*.jpg')
+				print 'big except'
