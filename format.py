@@ -2,10 +2,10 @@ from glob import glob
 import os
 from os.path import splitext, getsize
 from PIL import Image
+
 os.system('cd stickers@2x && find . \! -name "*.png" -delete && rm *_key@2x.png tab*')
 #jpglist = glob( "stickers@2x/*.[jJ][pP][gG]" )
 pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
-
 for png in pnglist:
 	im = Image.open(png)
 	png = splitext(png)[0]+".png"
