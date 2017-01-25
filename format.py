@@ -48,7 +48,8 @@ for png in pnglist:
 			im = Image.open(jpg)
 			im.save(png)
 			qua -= x*10
-			print str(qua)
+			#print str(qua)
 			if 	os.path.getsize(png) <= 350000:
 				os.system('rm stickers@2x/*.jpg')
 				print 'big except'
+				break
