@@ -46,26 +46,40 @@ def handle(msg):
 				sticker_id = str(command.split('\n')[1].split('/')[-1])
 			except:
 				sticker_id = str(command.split('/')[-1])
+			f = open('sticker.txt','r').read()
+			if sticker_id in f:
+				bot.sendMessage(chat_id,'這個有人弄過了捏\nhttps://t.me/addstickers/tdc_'+sticker_id)
 			urllib.urlretrieve (url.replace('replace',sticker_id),sticker_id+'.zip')
-			bot.sendMessage(chat_id, '下載完畢')
+			bot.sendMessage(chat_id, '下載完畢\n開始耐心等候(´Д` )')
 			url = 'https://store.line.me/stickershop/product/id/zh-Hant'
 			q = pq(url=url.replace('id',sticker_id))
 			packname = q('h3').filter('.mdCMN08Ttl').text()
 			bot.sendMessage(chat_id,packname.encode('utf-8'))
 			zip_ref = zipfile.ZipFile(sticker_id+'.zip', 'r')
-			zip_ref.extractall('stickers@2x.zip')
+			zip_ref.extractall('stickers@2x')
 			zip_ref.close()
 			os.system('rm *.zip')
 			os.system('python format.py')
 			pnglist = glob( 'stickers@2x/*.[pP][nN][gG]' )
-			sender.send_msg('Stickers', u'/newpack')
-			sender.send_msg('Stickers', packname)
-			pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
-			for png in pnglist:
-				print png
-				sender.send_document('Stickers', png)
-				sender.send_msg('Stickers', u'🔗')
-
+			try:
+				sender.send_msg('Stickers', u'/newpack')
+				sender.send_msg('Stickers', packname)
+				pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
+				path = '/home/tsai/python/TDC_Telegrambot/telegram-sticker-maker/'
+				for png in pnglist:
+					print 'upload'+png
+					sender.send_document('Stickers', str(path+png).decode('utf-8'))
+					sender.send_msg('Stickers', u'🔗')
+					time.sleep(1)
+				sender.send_msg('Stickers', u'/publish')
+				sender.send_msg('Stickers', u'tdc_'+sticker_id)
+				bot.sendMessage(chat_id,packname.encode('utf-8')+'\nhttps://t.me/addstickers/tdc_'+sticker_id)
+				os.system('rm -r stickers@2x')
+				f = open('sticker.txt','a')
+				f.write(sticker_id+'\n')
+			except:
+				os.system('rm -r stickers@2x')
+				bot.sendMessage(chat_id, 'QQ出問題')
 		else:
 			bot.sendMessage(chat_id,'QQ')
 	#接收圖片顯示圖片id
