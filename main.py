@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
-
+import os
 import sys
 import time
 import random
@@ -10,9 +10,18 @@ import uniout
 import pprint
 import urlparse
 import urllib
+import zipfile
+from glob import glob
+from pytg import Telegram
+from pytg.sender import Sender
+from pytg.receiver import Receiver
+from pyquery import PyQuery as pq
 from ConfigParser import SafeConfigParser
 parser = SafeConfigParser()
 parser.read('apitoken.txt')
+receiver = Receiver(host="localhost", port=4458)
+sender = Sender(host="localhost", port=4458)
+
 #定義telegram各項參數
 def handle(msg):
 	#pprint.pprint(msg)
@@ -25,7 +34,9 @@ def handle(msg):
 		username = msg['from']['first_name']
 	user_id = msg['from']['id']
 	url = 'http://dl.stickershop.line.naver.jp/products/0/0/1/replace/iphone/stickers@2x.zip'
+
 #https://line.me/S/sticker/7834
+#zh-Hant
 	#接收文字訊息回應
 	if content_type == 'text':
 		command = msg['text'].lower()
@@ -37,6 +48,24 @@ def handle(msg):
 				sticker_id = str(command.split('/')[-1])
 			urllib.urlretrieve (url.replace('replace',sticker_id),sticker_id+'.zip')
 			bot.sendMessage(chat_id, '下載完畢')
+			url = 'https://store.line.me/stickershop/product/id/zh-Hant'
+			q = pq(url=url.replace('id',sticker_id))
+			packname = q('h3').filter('.mdCMN08Ttl').text()
+			bot.sendMessage(chat_id,packname.encode('utf-8'))
+			zip_ref = zipfile.ZipFile(sticker_id+'.zip', 'r')
+			zip_ref.extractall('stickers@2x.zip')
+			zip_ref.close()
+			os.system('rm *.zip')
+			os.system('python format.py')
+			pnglist = glob( 'stickers@2x/*.[pP][nN][gG]' )
+			sender.send_msg('Stickers', u'/newpack')
+			sender.send_msg('Stickers', packname)
+			pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
+			for png in pnglist:
+				print png
+				sender.send_document('Stickers', png)
+				sender.send_msg('Stickers', u'🔗')
+
 		else:
 			bot.sendMessage(chat_id,'QQ')
 	#接收圖片顯示圖片id
