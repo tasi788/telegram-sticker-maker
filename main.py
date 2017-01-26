@@ -11,6 +11,7 @@ import pprint
 import urlparse
 import urllib
 import zipfile
+import commands
 from glob import glob
 from pytg import Telegram
 from pytg.sender import Sender
@@ -41,45 +42,66 @@ def handle(msg):
 	if content_type == 'text':
 		command = msg['text'].lower()
 		content = str(username.encode('utf-8'))+'('+str(user_id)+')'+'說：'+str(command.encode('utf-8'))
-		if 'https://line.me' in command:
+		print content
+		if 'line.me' in command:# in command and 'stickershop' in command and 'product' in command:
+			if '\n' in command:
+				command = command.split('\n')[1]
+			elif 'sticker' not in command:
+				bot.sendMessage(chat_id,'你確定你是傳貼圖網址嗎(つД`)ノ')
+				return
 			try:
-				sticker_id = str(command.split('\n')[1].split('/')[-1])
+				sticker_id = filter(str.isdigit, str(command))
 			except:
-				sticker_id = str(command.split('/')[-1])
+				bot.sendMessage(chat_id,'找不到欸QQ')
+				return
 			f = open('sticker.txt','r').read()
 			if sticker_id in f:
 				bot.sendMessage(chat_id,'這個有人弄過了捏\nhttps://t.me/addstickers/tdc_'+sticker_id)
-			urllib.urlretrieve (url.replace('replace',sticker_id),sticker_id+'.zip')
-			bot.sendMessage(chat_id, '下載完畢\n開始耐心等候(´Д` )')
+				return
+			try:
+				urllib.urlretrieve (url.replace('replace',sticker_id),sticker_id+'.zip')
+			except:
+				bot.sendMessage(chat_id,'啊...下載失敗，一整個就是錯誤！！！')
+			bot.sendMessage(chat_id, '下載完畢\n開始耐心等候約1分鐘(´Д` )')
 			url = 'https://store.line.me/stickershop/product/id/zh-Hant'
 			q = pq(url=url.replace('id',sticker_id))
 			packname = q('h3').filter('.mdCMN08Ttl').text()
-			bot.sendMessage(chat_id,packname.encode('utf-8'))
 			zip_ref = zipfile.ZipFile(sticker_id+'.zip', 'r')
 			zip_ref.extractall('stickers@2x')
 			zip_ref.close()
 			os.system('rm *.zip')
 			os.system('python format.py')
 			pnglist = glob( 'stickers@2x/*.[pP][nN][gG]' )
+			#try:
+			sender.send_msg('Stickers', u'/newpack')
 			try:
-				sender.send_msg('Stickers', u'/newpack')
-				sender.send_msg('Stickers', packname)
-				pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
-				path = '/home/tsai/python/TDC_Telegrambot/telegram-sticker-maker/'
-				for png in pnglist:
-					print 'upload'+png
-					sender.send_document('Stickers', str(path+png).decode('utf-8'))
-					sender.send_msg('Stickers', u'🔗')
-					time.sleep(1)
-				sender.send_msg('Stickers', u'/publish')
-				sender.send_msg('Stickers', u'tdc_'+sticker_id)
-				bot.sendMessage(chat_id,packname.encode('utf-8')+'\nhttps://t.me/addstickers/tdc_'+sticker_id)
-				os.system('rm -r stickers@2x')
-				f = open('sticker.txt','a')
-				f.write(sticker_id+'\n')
+				sender.send_msg('Stickers', packname.decode('utf-8'))
 			except:
-				os.system('rm -r stickers@2x')
-				bot.sendMessage(chat_id, 'QQ出問題')
+				sender.send_msg('Stickers', packname)
+			pnglist = glob( "stickers@2x/*.[pP][nN][gG]" )
+			path = '/home/tsai/python/TDC_Telegrambot/telegram-sticker-maker/stickers@2x/'
+			"""for png in pnglist:
+				print 'upload '+png
+				sender.send_document('Stickers', str(path+png).decode('utf-8'))
+				sender.send_msg('Stickers', u'🔗')
+				time.sleep(1)"""
+			ls_fail,ls_pass = commands.getstatusoutput('ls stickers@2x')
+			for png_sort in ls_pass.split('\n'):
+				print 'upload '+png_sort
+				sender.send_document('Stickers', str(path+png_sort).decode('utf-8'))
+				sender.send_msg('Stickers', u'🔗')
+				time.sleep(1)
+			sender.send_msg('Stickers', u'/publish')
+			sender.send_msg('Stickers', u'tdc_'+sticker_id)
+			bot.sendMessage(chat_id,packname.encode('utf-8')+'\nhttps://t.me/addstickers/tdc_'+sticker_id)
+			os.system('rm -r stickers@2x')
+			f = open('sticker.txt','a')
+			f.write(sticker_id+'\n')
+			#except:
+			#	os.system('rm -r stickers@2x')
+			#	bot.sendMessage(chat_id, 'QQ出問題，跟低吸說？')
+		elif command == '/start':
+			bot.sendMessage(chat_id,'使用方法：\n手機>\n去Line貼圖商店找到喜歡的連結貼過來就可以惹\n電腦>\n請服用https://store.line.me/home/zh-Hant')
 		else:
 			bot.sendMessage(chat_id,'QQ')
 	#接收圖片顯示圖片id
